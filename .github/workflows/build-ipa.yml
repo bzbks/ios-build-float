@@ -1,13 +1,13 @@
 name: Build Unsigned IPA
 
 on:
-  workflow_dispatch: # 允许在网页端手动点击运行
+  workflow_dispatch:
   push:
     branches: [ main, master ]
 
 jobs:
   build:
-    runs-on: macos-latest # 免费调用 GitHub 的云端 Mac 服务器
+    runs-on: macos-latest
 
     steps:
       - name: 拉取代码
@@ -17,6 +17,34 @@ jobs:
         run: |
           npm install
           npx cap sync ios
+
+      - name: 修复缺失的图标资源目录
+        run: |
+          rm -rf ios/App/App/Assets.xcassets
+          mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
+          cat << 'EOF' > ios/App/App/Assets.xcassets/Contents.json
+          {
+            "info" : {
+              "author" : "xcode",
+              "version" : 1
+            }
+          }
+          EOF
+          cat << 'EOF' > ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json
+          {
+            "images" : [
+              {
+                "idiom" : "universal",
+                "platform" : "ios",
+                "size" : "1024x1024"
+              }
+            ],
+            "info" : {
+              "author" : "xcode",
+              "version" : 1
+            }
+          }
+          EOF
 
       - name: 无证书编译 iOS 应用
         run: |
