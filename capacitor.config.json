@@ -1,0 +1,9 @@
+{
+  "appId": "com.bzbks.float",
+  "appName": "Float",
+  "webDir": "www",
+  "server": {
+    "url": "https://float.bzbks.cc.cd",
+    "cleartext": true
+  }
+}
