@@ -1,0 +1,42 @@
+name: Build Unsigned IPA
+
+on:
+  workflow_dispatch: # 允许在网页端手动点击运行
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: macos-latest # 免费调用 GitHub 的云端 Mac 服务器
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 同步 Capacitor 配置到 iOS 工程
+        run: |
+          npm install
+          npx cap sync ios
+
+      - name: 无证书编译 iOS 应用
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: 打包生成 IPA 文件
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -r WebApp-Unsigned.ipa Payload
+
+      - name: 上传 IPA 供下载
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebApp-IPA
+          path: WebApp-Unsigned.ipa
